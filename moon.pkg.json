@@ -1,0 +1,10 @@
+{
+  "deps": {
+    "moonbitlang/async": "0.14.2"
+  },
+  "import": [
+    "moonbitlang/async",
+    "moonbitlang/async/http",
+    "moonbitlang/async/io"
+  ]
+}

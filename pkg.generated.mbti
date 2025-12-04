@@ -1,0 +1,66 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "meguruli/http_router"
+
+import(
+  "moonbitlang/async/http"
+  "moonbitlang/async/io"
+)
+
+// Values
+pub fn by_name(Array[Param], String) -> String
+
+pub fn find_case_insensitive_path(Node?, String) -> (String?, Bool) raise
+
+// Errors
+
+// Types and methods
+type Node
+
+pub(all) struct Param {
+  key : String
+  value : String
+}
+
+pub(all) struct Router {
+  mut get_root : Node?
+  mut head_root : Node?
+  mut post_root : Node?
+  mut put_root : Node?
+  mut delete_root : Node?
+  mut patch_root : Node?
+  mut options_root : Node?
+  redirect_trailing_slash : Bool
+  redirect_fixed_path : Bool
+  handle_method_not_allowed : Bool
+  handle_options : Bool
+  mut not_found : (async (@http.Request, &@io.Reader, @http.ServerConnection) -> Unit)?
+  mut method_not_allowed : (async (@http.Request, &@io.Reader, @http.ServerConnection) -> Unit)?
+  mut global_options : (async (@http.Request, &@io.Reader, @http.ServerConnection) -> Unit)?
+  mut panic_handler : (async (@http.Request, &@io.Reader, @http.ServerConnection, String) -> Unit)?
+}
+pub fn Router::allowed_methods(Self, String, String) -> String raise
+pub fn Router::delete(Self, String, async (@http.Request, &@io.Reader, @http.ServerConnection, Array[Param]) -> Unit) -> Unit raise
+pub fn Router::get(Self, String, async (@http.Request, &@io.Reader, @http.ServerConnection, Array[Param]) -> Unit) -> Unit raise
+pub fn Router::handle(Self, String, String, async (@http.Request, &@io.Reader, @http.ServerConnection, Array[Param]) -> Unit) -> Unit raise
+pub fn Router::head(Self, String, async (@http.Request, &@io.Reader, @http.ServerConnection, Array[Param]) -> Unit) -> Unit raise
+pub fn Router::lookup(Self, String, String) -> ((async (@http.Request, &@io.Reader, @http.ServerConnection, Array[Param]) -> Unit)?, Array[Param], Bool) raise
+pub fn Router::new() -> Self
+pub fn Router::options(Self, String, async (@http.Request, &@io.Reader, @http.ServerConnection, Array[Param]) -> Unit) -> Unit raise
+pub fn Router::patch(Self, String, async (@http.Request, &@io.Reader, @http.ServerConnection, Array[Param]) -> Unit) -> Unit raise
+pub fn Router::post(Self, String, async (@http.Request, &@io.Reader, @http.ServerConnection, Array[Param]) -> Unit) -> Unit raise
+pub fn Router::put(Self, String, async (@http.Request, &@io.Reader, @http.ServerConnection, Array[Param]) -> Unit) -> Unit raise
+pub fn Router::root_node(Self) -> Node?
+pub async fn Router::serve_http(Self, @http.Request, &@io.Reader, @http.ServerConnection) -> Unit
+pub fn Router::try_redirect(Self, String, String) -> (String?, Int) raise
+
+// Type aliases
+pub type Handle = async (@http.Request, &@io.Reader, @http.ServerConnection, Array[Param]) -> Unit
+
+pub type HttpHandle = async (@http.Request, &@io.Reader, @http.ServerConnection) -> Unit
+
+pub type PanicHandler = async (@http.Request, &@io.Reader, @http.ServerConnection, String) -> Unit
+
+pub type Params = Array[Param]
+
+// Traits
+
