@@ -1,15 +1,15 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "meguruli/http_router"
 
-import(
-  "moonbitlang/async/http"
-  "moonbitlang/async/io"
-)
+import {
+  "moonbitlang/async/http",
+  "moonbitlang/async/io",
+}
 
 // Values
 pub fn by_name(Array[Param], String) -> String
 
-pub fn find_case_insensitive_path(Node?, String) -> (String?, Bool) raise
+pub fn find_case_insensitive_path(Node?, String) -> (String?, Bool)
 
 // Errors
 
