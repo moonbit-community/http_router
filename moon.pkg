@@ -1,0 +1,9 @@
+import {
+  "moonbitlang/async",
+  "moonbitlang/async/http",
+  "moonbitlang/async/io",
+}
+
+options(
+  deps: { "moonbitlang/async": "0.18.0" },
+)
