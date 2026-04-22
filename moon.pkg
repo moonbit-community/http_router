@@ -6,4 +6,8 @@ import {
 
 options(
   deps: { "moonbitlang/async": "0.18.0" },
+  targets: {
+    "http_router.mbt": ["native"],
+    "http_router_test.mbt": ["native"],
+  },
 )
