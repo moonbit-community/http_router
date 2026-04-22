@@ -86,7 +86,7 @@ moon test --update
 
 The following example shows how to create a `Router`, register routes and plug it into an HTTP server (pseudo-code, focused on router usage):
 
-```moonbit
+```moonbit nocheck
 let router = Router::new()
 
 // Static route
