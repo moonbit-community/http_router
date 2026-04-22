@@ -10,12 +10,12 @@ async fn dummy_handler(
 }
 
 ///|
-async fn bench_lookup(
+fn bench_lookup(
   router : Router,
   method_name : String,
   path : String,
   n : Int,
-) -> Unit {
+) -> Unit raise {
   let start = @async.now()
   for _ in 0..<n {
     let (h, params, _) = router.lookup(method_name, path)
@@ -38,7 +38,7 @@ fn bench_lookup_paths(
   paths : Array[String],
   n : Int,
 ) -> Unit raise {
-  guard not(paths.is_empty()) else {
+  guard !paths.is_empty() else {
     abort("bench_lookup_paths needs at least one path")
   }
   let start = @async.now()

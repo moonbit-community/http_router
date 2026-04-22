@@ -141,7 +141,7 @@ fn strings_equal_case_insensitive(s1 : String, s2 : String) -> Bool {
 }
 
 ///|
-fn split_path(path : String) -> Array[String] raise {
+fn split_path(path : String) -> Array[String] {
   let segments : Array[String] = []
   if path == "" || path == "/" {
     return segments
@@ -193,12 +193,12 @@ fn insert_route(
   let seg = segments[idx]
   let is_last = idx == segments.length() - 1
   let (kind, name) = if seg.has_prefix(":") {
-    (Param, (seg[1:] catch { _ => "" }).to_string())
+    (Param, seg[1:].to_string())
   } else if seg.has_prefix("*") {
     guard is_last else {
       abort("router: catch-all must be the final segment: \{path}")
     }
-    (CatchAll, (seg[1:] catch { _ => "" }).to_string())
+    (CatchAll, seg[1:].to_string())
   } else {
     (Static, seg)
   }
@@ -553,7 +553,7 @@ pub fn Router::allowed_methods(
       methods.push("PATCH")
     }
     // For an OPTIONS request, include OPTIONS itself when other methods exist
-    if req_method == "OPTIONS" && not(methods.is_empty()) {
+    if req_method == "OPTIONS" && !methods.is_empty() {
       methods.push("OPTIONS")
     }
     if methods.is_empty() {
@@ -570,7 +570,7 @@ pub fn Router::allowed_methods(
 pub fn find_case_insensitive_path(
   root : Node?,
   path : String,
-) -> (String?, Bool) raise {
+) -> (String?, Bool) {
   match root {
     None => (None, false)
     Some(root) => {
@@ -595,7 +595,7 @@ pub fn find_case_insensitive_path(
               break
             }
           }
-          if not(matched) {
+          if !matched {
             // try case-insensitive match for static children
             for child in node.static_children {
               if strings_equal_case_insensitive(child.name, seg) {
@@ -606,7 +606,7 @@ pub fn find_case_insensitive_path(
               }
             }
           }
-          if not(matched) {
+          if !matched {
             // try param child
             match node.param_child {
               Some(param_node) => {
@@ -617,7 +617,7 @@ pub fn find_case_insensitive_path(
               None => ignore(())
             }
           }
-          if not(matched) {
+          if !matched {
             // try catch-all child
             match node.catch_all_child {
               Some(catch_all_node) => {
@@ -628,7 +628,7 @@ pub fn find_case_insensitive_path(
               None => ignore(())
             }
           }
-          if not(matched) {
+          if !matched {
             return (None, false)
           }
         }
@@ -637,7 +637,7 @@ pub fn find_case_insensitive_path(
             let fixed_path = "/" + fixed_segments.join("/")
             let needs_trailing_slash = path.has_suffix("/")
             let fixed_path_with_slash = if needs_trailing_slash &&
-              not(fixed_path.has_suffix("/")) {
+              !fixed_path.has_suffix("/") {
               fixed_path + "/"
             } else {
               fixed_path
@@ -668,7 +668,7 @@ pub fn Router::try_redirect(
     } else {
       ""
     }
-    let path_with_slash = if not(path_has_slash) { path + "/" } else { "" }
+    let path_with_slash = if !path_has_slash { path + "/" } else { "" }
     if path_without_slash != "" {
       let (handle, _, _) = self.lookup(method_str, path_without_slash)
       if handle is Some(_) {
