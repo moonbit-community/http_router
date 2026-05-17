@@ -148,15 +148,15 @@ fn split_path(path : String) -> Array[String] {
   }
   let mut rest = path
   if rest.has_prefix("/") {
-    rest = rest[1:].to_string()
+    rest = rest[1:].to_owned()
   }
   while true {
     match rest.find("/") {
       Some(i) => {
         if i > 0 {
-          segments.push(rest[:i].to_string())
+          segments.push(rest[:i].to_owned())
         }
-        rest = rest[i + 1:].to_string()
+        rest = rest[i + 1:].to_owned()
       }
       None => {
         if rest != "" {
@@ -193,12 +193,12 @@ fn insert_route(
   let seg = segments[idx]
   let is_last = idx == segments.length() - 1
   let (kind, name) = if seg.has_prefix(":") {
-    (Param, seg[1:].to_string())
+    (Param, seg[1:].to_owned())
   } else if seg.has_prefix("*") {
     guard is_last else {
       abort("router: catch-all must be the final segment: \{path}")
     }
-    (CatchAll, seg[1:].to_string())
+    (CatchAll, seg[1:].to_owned())
   } else {
     (Static, seg)
   }
@@ -664,7 +664,7 @@ pub fn Router::try_redirect(
   if self.redirect_trailing_slash {
     let path_has_slash = path.has_suffix("/")
     let path_without_slash = if path_has_slash && path != "/" {
-      path[:path.length() - 1].to_string()
+      path[:path.length() - 1].to_owned()
     } else {
       ""
     }
