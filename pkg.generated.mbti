@@ -51,7 +51,7 @@ pub fn Router::post(Self, String, async (@http.Request, &@io.Reader, @http.Serve
 pub fn Router::put(Self, String, async (@http.Request, &@io.Reader, @http.ServerConnection, Array[Param]) -> Unit) -> Unit raise
 pub fn Router::root_node(Self) -> Node?
 pub async fn Router::serve_http(Self, @http.Request, &@io.Reader, @http.ServerConnection) -> Unit
-pub fn Router::try_redirect(Self, String, String) -> (String?, Int) raise
+pub fn Router::try_redirect(Self, String, String) -> (String?, Int32) raise
 
 // Type aliases
 pub type Handle = async (@http.Request, &@io.Reader, @http.ServerConnection, Array[Param]) -> Unit
@@ -63,4 +63,3 @@ pub type PanicHandler = async (@http.Request, &@io.Reader, @http.ServerConnectio
 pub type Params = Array[Param]
 
 // Traits
-
