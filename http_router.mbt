@@ -173,7 +173,7 @@ fn split_path(path : String) -> Array[String] {
 fn insert_route(
   node : Node,
   segments : Array[String],
-  idx : Int,
+  idx : Int32,
   path : String,
   handle : Handle,
 ) -> Node raise {
@@ -320,7 +320,7 @@ fn clone_params(params : Params) -> Params {
 fn lookup_from_node(
   node : Node,
   segments : Array[String],
-  idx : Int,
+  idx : Int32,
   params : Params,
 ) -> (Handle?, Params, Bool) raise {
   if idx == segments.length() {
@@ -345,7 +345,7 @@ fn lookup_from_node(
     match node.param_child {
       Some(param_node) => {
         let new_params = clone_params(params)
-        new_params.push({ key: param_node.name, value: seg })
+        new_params.push({ key: param_node.name, value: seg, })
         let (h, p, found) = lookup_from_node(
           param_node,
           segments,
@@ -368,7 +368,7 @@ fn lookup_from_node(
         }
         let value = tail_segments.join("/")
         let new_params = clone_params(params)
-        new_params.push({ key: catch_all_node.name, value })
+        new_params.push({ key: catch_all_node.name, value, })
         match catch_all_node.handle {
           Some(h) => (Some(h), new_params, false)
           None => (None, new_params, false)
@@ -660,7 +660,7 @@ pub fn Router::try_redirect(
   self : Router,
   method_str : String,
   path : String,
-) -> (String?, Int) raise {
+) -> (String?, Int32) raise {
   if self.redirect_trailing_slash {
     let path_has_slash = path.has_suffix("/")
     let path_without_slash = if path_has_slash && path != "/" {

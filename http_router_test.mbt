@@ -3,7 +3,7 @@ async fn dummy_handler(
   _req : @http.Request,
   _body : &@io.Reader,
   conn : @http.ServerConnection,
-  _params : Params,
+  _params : @http_router.Params,
 ) -> Unit {
   conn.send_response(200, "OK") |> ignore
   conn.end_response()
@@ -11,10 +11,10 @@ async fn dummy_handler(
 
 ///|
 fn bench_lookup(
-  router : Router,
+  router : @http_router.Router,
   method_name : String,
   path : String,
-  n : Int,
+  n : Int32,
 ) -> Unit raise {
   let start = @async.now()
   for _ in 0..<n {
@@ -33,10 +33,10 @@ fn bench_lookup(
 
 ///|
 fn bench_lookup_paths(
-  router : Router,
+  router : @http_router.Router,
   method_name : String,
   paths : Array[String],
-  n : Int,
+  n : Int32,
 ) -> Unit raise {
   guard !paths.is_empty() else {
     abort("bench_lookup_paths needs at least one path")
@@ -58,7 +58,7 @@ fn bench_lookup_paths(
 
 ///|
 async test "bench simple routes" {
-  let router = Router::new()
+  let router = @http_router.Router::new()
   router.get("/", dummy_handler)
   router.get("/hello", dummy_handler)
   router.get("/user/:id", dummy_handler)
@@ -71,41 +71,41 @@ async test "bench simple routes" {
 
 ///|
 async test "bench many params" {
-  let router = Router::new()
+  let router = @http_router.Router::new()
   router.get("/:a/:b/:c/:d/:e/:f/:g/:h/:i/:j", dummy_handler)
   bench_lookup(router, "GET", "/1/2/3/4/5/6/7/8/9/10", 100000)
 }
 
 ///|
 async test "head fallback to get handler" {
-  let router = Router::new()
+  let router = @http_router.Router::new()
   router.get("/users/:id", dummy_handler)
   let (head_handle, params, _) = router.lookup("HEAD", "/users/42")
   assert_eq(head_handle is Some(_), true)
-  assert_eq(by_name(params, "id"), "42")
+  assert_eq(@http_router.by_name(params, "id"), "42")
 }
 
 ///|
 async test "test params extraction" {
-  let router = Router::new()
+  let router = @http_router.Router::new()
   router.get("/user/:id", dummy_handler)
   let (_, params, _) = router.lookup("GET", "/user/123")
   assert_eq(params.length(), 1)
-  assert_eq(by_name(params, "id"), "123")
+  assert_eq(@http_router.by_name(params, "id"), "123")
 }
 
 ///|
 async test "test catch-all" {
-  let router = Router::new()
+  let router = @http_router.Router::new()
   router.get("/static/*filepath", dummy_handler)
   let (_, params, _) = router.lookup("GET", "/static/css/style.css")
   assert_eq(params.length(), 1)
-  assert_eq(by_name(params, "filepath"), "css/style.css")
+  assert_eq(@http_router.by_name(params, "filepath"), "css/style.css")
 }
 
 ///|
 async test "test multiple methods" {
-  let router = Router::new()
+  let router = @http_router.Router::new()
   router.get("/api/users", dummy_handler)
   router.post("/api/users", dummy_handler)
   router.put("/api/users/:id", dummy_handler)
@@ -116,15 +116,15 @@ async test "test multiple methods" {
   assert_eq(post_handle is Some(_), true)
   let (put_handle, params, _) = router.lookup("PUT", "/api/users/123")
   assert_eq(put_handle is Some(_), true)
-  assert_eq(by_name(params, "id"), "123")
+  assert_eq(@http_router.by_name(params, "id"), "123")
   let (delete_handle, params2, _) = router.lookup("DELETE", "/api/users/456")
   assert_eq(delete_handle is Some(_), true)
-  assert_eq(by_name(params2, "id"), "456")
+  assert_eq(@http_router.by_name(params2, "id"), "456")
 }
 
 ///|
 async test "bench massive static routes" {
-  let router = Router::new()
+  let router = @http_router.Router::new()
   for i in 0..<2000 {
     router.get("/static/data/\{i}", dummy_handler)
   }
@@ -134,7 +134,7 @@ async test "bench massive static routes" {
 
 ///|
 async test "bench realistic mixed workload" {
-  let router = Router::new()
+  let router = @http_router.Router::new()
   router.get("/", dummy_handler)
   router.get("/user/:id", dummy_handler)
   router.get("/user/:id/profile", dummy_handler)
@@ -153,7 +153,7 @@ async test "bench realistic mixed workload" {
 
 ///|
 async test "bench catch-all heavy" {
-  let router = Router::new()
+  let router = @http_router.Router::new()
   router.get("/assets/*filepath", dummy_handler)
   router.get("/assets/images/*filepath", dummy_handler)
   router.get("/assets/js/*filepath", dummy_handler)
@@ -166,7 +166,7 @@ async test "bench catch-all heavy" {
 
 ///|
 async test "test trailing slash redirect" {
-  let router = Router::new()
+  let router = @http_router.Router::new()
   router.get("/users", dummy_handler)
   router.get("/posts/", dummy_handler)
   let (path1, code1) = router.try_redirect("GET", "/users/")
@@ -182,23 +182,29 @@ async test "test trailing slash redirect" {
 
 ///|
 async test "test case insensitive path fix" {
-  let router = Router::new()
+  let router = @http_router.Router::new()
   router.get("/Users/Profile", dummy_handler)
   router.get("/Posts/Show", dummy_handler)
   let root = router.root_node()
-  let (path1, found1) = find_case_insensitive_path(root, "/users/profile")
+  let (path1, found1) = @http_router.find_case_insensitive_path(
+    root, "/users/profile",
+  )
   assert_eq(found1, true)
   match path1 {
     Some(p) => assert_eq(p == "/Users/Profile", true)
     None => assert_eq(false, true)
   }
-  let (path2, found2) = find_case_insensitive_path(root, "/POSTS/show")
+  let (path2, found2) = @http_router.find_case_insensitive_path(
+    root, "/POSTS/show",
+  )
   assert_eq(found2, true)
   match path2 {
     Some(p) => assert_eq(p == "/Posts/Show", true)
     None => assert_eq(false, true)
   }
-  let (path3, found3) = find_case_insensitive_path(root, "/notfound/path")
+  let (path3, found3) = @http_router.find_case_insensitive_path(
+    root, "/notfound/path",
+  )
   assert_eq(found3, false)
   assert_eq(path3 is None, true)
 }
@@ -214,7 +220,7 @@ async test "test not found handler" {
     conn.end_response()
   }
 
-  let router = Router::new()
+  let router = @http_router.Router::new()
   router.not_found = Some(not_found_handler)
   router.get("/exists", dummy_handler)
   let (handle, _, _) = router.lookup("GET", "/notexists")
@@ -223,7 +229,7 @@ async test "test not found handler" {
 
 ///|
 async test "test method not allowed" {
-  let router = Router::new()
+  let router = @http_router.Router::new()
   router.get("/api/users", dummy_handler)
   router.post("/api/users", dummy_handler)
   let (get_handle, _, _) = router.lookup("GET", "/api/users")
@@ -237,7 +243,7 @@ async test "test method not allowed" {
 
 ///|
 async test "test options handling" {
-  let router = Router::new()
+  let router = @http_router.Router::new()
   router.get("/api/users", dummy_handler)
   router.post("/api/users", dummy_handler)
   router.put("/api/users", dummy_handler)
@@ -251,7 +257,7 @@ async test "test options handling" {
 
 ///|
 async test "test empty path and root path" {
-  let router = Router::new()
+  let router = @http_router.Router::new()
   router.get("/", dummy_handler)
   let (handle1, _, _) = router.lookup("GET", "/")
   assert_eq(handle1 is Some(_), true)
@@ -261,39 +267,39 @@ async test "test empty path and root path" {
 
 ///|
 async test "test multiple params" {
-  let router = Router::new()
+  let router = @http_router.Router::new()
   router.get("/posts/:category/:id", dummy_handler)
   let (_, params, _) = router.lookup("GET", "/posts/tech/123")
   assert_eq(params.length(), 2)
-  assert_eq(by_name(params, "category"), "tech")
-  assert_eq(by_name(params, "id"), "123")
+  assert_eq(@http_router.by_name(params, "category"), "tech")
+  assert_eq(@http_router.by_name(params, "id"), "123")
 }
 
 ///|
 async test "test catch-all with multiple segments" {
-  let router = Router::new()
+  let router = @http_router.Router::new()
   router.get("/static/*filepath", dummy_handler)
   let (_, params, _) = router.lookup("GET", "/static/css/framework/style.css")
   assert_eq(params.length(), 1)
-  assert_eq(by_name(params, "filepath"), "css/framework/style.css")
+  assert_eq(@http_router.by_name(params, "filepath"), "css/framework/style.css")
 }
 
 ///|
 async test "test param with catch-all conflict" {
-  let router = Router::new()
+  let router = @http_router.Router::new()
   router.get("/api/:version/users", dummy_handler)
   router.get("/api/*rest", dummy_handler)
   let (handle1, params1, _) = router.lookup("GET", "/api/v1/users")
   assert_eq(handle1 is Some(_), true)
-  assert_eq(by_name(params1, "version"), "v1")
+  assert_eq(@http_router.by_name(params1, "version"), "v1")
   let (handle2, params2, _) = router.lookup("GET", "/api/v1/users/profile")
   assert_eq(handle2 is Some(_), true)
-  assert_eq(by_name(params2, "rest"), "v1/users/profile")
+  assert_eq(@http_router.by_name(params2, "rest"), "v1/users/profile")
 }
 
 ///|
 async test "test trailing slash redirect with existing route" {
-  let router = Router::new()
+  let router = @http_router.Router::new()
   router.get("/users", dummy_handler)
   router.get("/posts/", dummy_handler)
   let (path1, code1) = router.try_redirect("GET", "/users/")
@@ -306,10 +312,10 @@ async test "test trailing slash redirect with existing route" {
 
 ///|
 async test "test path fix disabled" {
-  let router = Router::new()
+  let router = @http_router.Router::new()
   router.get("/Users", dummy_handler)
   let root = router.root_node()
-  let (path, found) = find_case_insensitive_path(root, "/users")
+  let (path, found) = @http_router.find_case_insensitive_path(root, "/users")
   assert_eq(found, true)
   match path {
     Some(p) => assert_eq(p == "/Users", true)
@@ -319,16 +325,16 @@ async test "test path fix disabled" {
 
 ///|
 async test "test catch-all at root" {
-  let router = Router::new()
+  let router = @http_router.Router::new()
   router.get("/*path", dummy_handler)
   let (handle, params, _) = router.lookup("GET", "/any/path/here")
   assert_eq(handle is Some(_), true)
-  assert_eq(by_name(params, "path"), "any/path/here")
+  assert_eq(@http_router.by_name(params, "path"), "any/path/here")
 }
 
 ///|
 async test "test static route priority" {
-  let router = Router::new()
+  let router = @http_router.Router::new()
   router.get("/users/:id", dummy_handler)
   router.get("/users/me", dummy_handler)
   let (handle1, params1, _) = router.lookup("GET", "/users/me")
@@ -337,5 +343,5 @@ async test "test static route priority" {
   let (handle2, params2, _) = router.lookup("GET", "/users/123")
   assert_eq(handle2 is Some(_), true)
   assert_eq(params2.length(), 1)
-  assert_eq(by_name(params2, "id"), "123")
+  assert_eq(@http_router.by_name(params2, "id"), "123")
 }
